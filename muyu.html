@@ -1,0 +1,2246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>吐槽导师木鱼模拟器 | 科研人解压版</title>
+    <style>
+        :root {
+            --ink: #1c201c;
+            --paper: #fff1d0;
+            --paper-dim: rgba(255, 241, 208, 0.7);
+            --gold: #f1bf63;
+            --amber: #d98b45;
+            --jade: #70c1a6;
+            --green: #14281f;
+            --deep: #0c1310;
+            --red: #b94c33;
+            --shadow: rgba(7, 12, 8, 0.4);
+            --hit-x: 50%;
+            --hit-y: 38%;
+            --tilt-x: 0deg;
+            --tilt-y: 0deg;
+            --wind-x: 58px;
+            --wind-rot: -34deg;
+            --impact-rot: -8deg;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            min-height: 100%;
+            background: var(--deep);
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            color: var(--paper);
+            font-family: "LXGW WenKai", "FZKai-Z03", "KaiTi", "STKaiti", "Microsoft YaHei", serif;
+            overflow-x: hidden;
+            user-select: none;
+            background:
+                radial-gradient(circle at 17% 16%, rgba(241, 191, 99, 0.2), transparent 28vw),
+                radial-gradient(circle at 84% 10%, rgba(112, 193, 166, 0.24), transparent 30vw),
+                linear-gradient(135deg, #17271e 0%, #2b3c22 44%, #0c1310 100%);
+        }
+
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        body::before {
+            opacity: 0.23;
+            background-image:
+                linear-gradient(110deg, transparent 0 18%, rgba(255, 241, 208, 0.08) 18% 19%, transparent 19% 100%),
+                linear-gradient(70deg, transparent 0 31%, rgba(255, 241, 208, 0.06) 31% 32%, transparent 32% 100%);
+            background-size: 180px 100%, 230px 100%;
+            mix-blend-mode: screen;
+        }
+
+        body::after {
+            background:
+                linear-gradient(90deg, rgba(4, 8, 6, 0.44), transparent 18%, transparent 82%, rgba(4, 8, 6, 0.46)),
+                radial-gradient(circle at center, transparent 46%, rgba(0, 0, 0, 0.32));
+        }
+
+        body.focus-mode .app-shell {
+            grid-template-columns: minmax(0, 1fr);
+            max-width: 920px;
+        }
+
+        body.focus-mode .side-panel {
+            display: none;
+        }
+
+        button,
+        input,
+        label {
+            font: inherit;
+        }
+
+        button,
+        .upload-label {
+            border: 0;
+            cursor: pointer;
+            color: var(--ink);
+            background: linear-gradient(180deg, #fff0bf, #e5af58);
+            border-radius: 999px;
+            padding: 10px 16px;
+            box-shadow: 0 8px 18px rgba(23, 13, 5, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.62);
+            transition: transform 160ms ease, filter 160ms ease, box-shadow 160ms ease;
+        }
+
+        button:hover,
+        .upload-label:hover {
+            filter: brightness(1.06);
+            transform: translateY(-2px);
+        }
+
+        button:active,
+        .upload-label:active {
+            transform: translateY(1px);
+        }
+
+        button.secondary {
+            color: var(--paper);
+            background: rgba(255, 241, 208, 0.12);
+            border: 1px solid rgba(255, 241, 208, 0.25);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        input[type="text"] {
+            min-width: 0;
+            color: var(--paper);
+            background: rgba(10, 23, 18, 0.58);
+            border: 1px solid rgba(255, 241, 208, 0.25);
+            border-radius: 14px;
+            outline: 0;
+            padding: 11px 12px;
+            box-shadow: inset 0 2px 12px rgba(0, 0, 0, 0.24);
+        }
+
+        input[type="text"]::placeholder {
+            color: rgba(255, 241, 208, 0.52);
+        }
+
+        .app-shell {
+            position: relative;
+            z-index: 1;
+            width: min(1480px, calc(100vw - 32px));
+            min-height: 100vh;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: minmax(260px, 330px) minmax(500px, 1fr) minmax(280px, 360px);
+            gap: 22px;
+            align-items: center;
+            padding: 28px 0;
+        }
+
+        .panel {
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 241, 208, 0.2);
+            border-radius: 32px;
+            background:
+                linear-gradient(145deg, rgba(255, 241, 208, 0.14), rgba(16, 36, 29, 0.35)),
+                rgba(18, 38, 30, 0.68);
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(18px);
+        }
+
+        .panel::before {
+            content: "";
+            position: absolute;
+            inset: 1px;
+            border-radius: inherit;
+            pointer-events: none;
+            background:
+                linear-gradient(120deg, rgba(255, 255, 255, 0.13), transparent 38%),
+                radial-gradient(circle at 24% 12%, rgba(241, 191, 99, 0.18), transparent 26%);
+        }
+
+        .side-panel {
+            padding: 24px;
+        }
+
+        .brand-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #f7d794;
+            letter-spacing: 0.18em;
+            font-size: 13px;
+        }
+
+        .brand-kicker::before {
+            content: "";
+            width: 28px;
+            height: 1px;
+            background: currentColor;
+            opacity: 0.72;
+        }
+
+        h1,
+        h2,
+        h3,
+        p {
+            position: relative;
+            margin: 0;
+        }
+
+        h1 {
+            margin-top: 10px;
+            font-size: clamp(34px, 5vw, 58px);
+            line-height: 0.98;
+            letter-spacing: 0.02em;
+            color: #fff0bf;
+            text-shadow: 0 12px 38px rgba(0, 0, 0, 0.34);
+        }
+
+        h2 {
+            color: #fff0bf;
+            font-size: 22px;
+            letter-spacing: 0.06em;
+        }
+
+        .lead {
+            margin-top: 12px;
+            color: rgba(255, 241, 208, 0.75);
+            line-height: 1.55;
+            font-size: 15px;
+        }
+
+        .stat-grid {
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin: 18px 0;
+        }
+
+        .stat-card {
+            min-height: 82px;
+            padding: 14px;
+            border-radius: 22px;
+            background: rgba(7, 18, 14, 0.44);
+            border: 1px solid rgba(255, 241, 208, 0.16);
+        }
+
+        .stat-label {
+            display: block;
+            color: rgba(255, 241, 208, 0.56);
+            font-size: 13px;
+            letter-spacing: 0.08em;
+        }
+
+        .stat-value {
+            display: block;
+            margin-top: 8px;
+            color: #ffe3a0;
+            font-size: 30px;
+            line-height: 1;
+            font-weight: 800;
+        }
+
+        .stat-value.small {
+            font-size: 18px;
+            line-height: 1.25;
+        }
+
+        .control-grid,
+        .stage-actions {
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .mentor-card {
+            position: relative;
+            margin-top: 18px;
+            padding: 15px;
+            border-radius: 24px;
+            background:
+                linear-gradient(135deg, rgba(241, 191, 99, 0.18), rgba(112, 193, 166, 0.09)),
+                rgba(7, 18, 14, 0.34);
+            border: 1px solid rgba(255, 241, 208, 0.18);
+        }
+
+        .mentor-card-title {
+            color: #f7d794;
+            font-size: 14px;
+            letter-spacing: 0.16em;
+        }
+
+        .mentor-card-text {
+            margin: 10px 0 12px;
+            color: rgba(255, 248, 224, 0.86);
+            line-height: 1.55;
+        }
+
+        .privacy-note {
+            margin-top: 12px;
+            color: rgba(255, 241, 208, 0.52);
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .stage-panel {
+            min-height: min(760px, calc(100vh - 56px));
+            padding: clamp(22px, 3vw, 38px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: stretch;
+        }
+
+        .stage-header {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .stage-title {
+            max-width: 600px;
+        }
+
+        .stage-title h2 {
+            font-size: clamp(28px, 4vw, 46px);
+            line-height: 1.08;
+        }
+
+        .stage-title p {
+            margin-top: 8px;
+            color: rgba(255, 241, 208, 0.68);
+            line-height: 1.55;
+        }
+
+        .stage-side {
+            position: relative;
+            display: grid;
+            gap: 10px;
+            justify-items: end;
+            flex: 0 0 auto;
+        }
+
+        .zone-pill {
+            display: grid;
+            gap: 5px;
+            min-width: 166px;
+            padding: 12px 16px;
+            border-radius: 18px;
+            text-align: right;
+            background: rgba(8, 20, 16, 0.52);
+            border: 1px solid rgba(255, 241, 208, 0.18);
+        }
+
+        .zone-pill span:first-child {
+            color: rgba(255, 241, 208, 0.58);
+            font-size: 12px;
+            letter-spacing: 0.14em;
+        }
+
+        .zone-pill strong {
+            color: #ffe3a0;
+            font-size: 20px;
+        }
+
+        .muyu-stage {
+            position: relative;
+            min-height: 452px;
+            display: grid;
+            place-items: center;
+            margin: 24px 0 16px;
+            perspective: 900px;
+        }
+
+        .muyu-stage::before {
+            content: "";
+            position: absolute;
+            left: 50%;
+            bottom: 34px;
+            width: min(620px, 88%);
+            height: 128px;
+            transform: translateX(-50%) rotateX(72deg);
+            border-radius: 50%;
+            background:
+                radial-gradient(circle, rgba(241, 191, 99, 0.22), transparent 56%),
+                radial-gradient(ellipse, rgba(0, 0, 0, 0.5), transparent 70%);
+            filter: blur(4px);
+        }
+
+        .desk {
+            position: absolute;
+            left: 50%;
+            bottom: 18px;
+            width: min(640px, 94%);
+            height: 96px;
+            transform: translateX(-50%);
+            border-radius: 24px 24px 38px 38px;
+            background:
+                linear-gradient(90deg, rgba(255, 224, 154, 0.12), transparent 20%, rgba(255, 224, 154, 0.16) 48%, transparent 78%),
+                repeating-linear-gradient(92deg, #4b2516 0 16px, #67321c 16px 24px, #3a1a10 24px 38px);
+            box-shadow: inset 0 14px 18px rgba(255, 255, 255, 0.06), 0 22px 42px rgba(0, 0, 0, 0.34);
+        }
+
+        .desk::before {
+            content: "待改稿";
+            position: absolute;
+            left: 10%;
+            top: -38px;
+            width: 122px;
+            height: 74px;
+            display: grid;
+            place-items: center;
+            color: #5b3520;
+            font-size: 18px;
+            transform: rotate(-8deg);
+            border-radius: 8px;
+            background:
+                linear-gradient(170deg, rgba(255, 255, 255, 0.72), rgba(255, 236, 190, 0.92)),
+                repeating-linear-gradient(0deg, transparent 0 13px, rgba(185, 76, 51, 0.16) 14px 15px);
+            box-shadow: 0 12px 22px rgba(0, 0, 0, 0.24);
+        }
+
+        .desk::after {
+            content: "咖啡";
+            position: absolute;
+            right: 12%;
+            top: -50px;
+            width: 74px;
+            height: 54px;
+            display: grid;
+            place-items: center;
+            color: #f6dbab;
+            font-size: 16px;
+            border-radius: 12px 12px 28px 28px;
+            background:
+                radial-gradient(ellipse at center top, #3c1b12 0 38%, transparent 39%),
+                linear-gradient(180deg, #b45737, #5e2416);
+            box-shadow: inset 0 8px 12px rgba(255, 255, 255, 0.12), 0 14px 24px rgba(0, 0, 0, 0.26);
+        }
+
+        .advisor-target {
+            position: relative;
+            display: block;
+            width: min(370px, 74vw);
+            aspect-ratio: 0.78 / 1;
+            border: 0;
+            padding: 18px 18px 42px;
+            border-radius: 28px;
+            background:
+                linear-gradient(145deg, rgba(255, 252, 238, 0.96), rgba(221, 185, 122, 0.96)),
+                linear-gradient(180deg, #fff0bf, #c88946);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.8),
+                inset -16px -18px 24px rgba(106, 54, 24, 0.18),
+                0 30px 0 #5d301a,
+                0 48px 58px rgba(0, 0, 0, 0.4);
+            transform-style: preserve-3d;
+            isolation: isolate;
+            touch-action: manipulation;
+            outline: 0;
+        }
+
+        .advisor-target::before {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: -78px;
+            width: 120px;
+            height: 96px;
+            transform: translateX(-50%);
+            border-radius: 70px 70px 20px 20px;
+            background:
+                linear-gradient(90deg, transparent 0 38%, rgba(255, 241, 208, 0.34) 39% 43%, transparent 44% 56%, rgba(255, 241, 208, 0.34) 57% 61%, transparent 62%),
+                linear-gradient(180deg, #803a23, #3c160f);
+            box-shadow: inset 0 12px 18px rgba(255, 255, 255, 0.12), 0 16px 24px rgba(0, 0, 0, 0.22);
+            z-index: -1;
+        }
+
+        .advisor-target::after {
+            content: "导师照片";
+            position: absolute;
+            left: 18px;
+            right: 18px;
+            bottom: 11px;
+            height: 24px;
+            display: grid;
+            place-items: center;
+            color: rgba(52, 28, 17, 0.72);
+            font-size: 14px;
+            letter-spacing: 0.2em;
+            border-top: 1px dashed rgba(74, 40, 24, 0.24);
+        }
+
+        .advisor-target:hover {
+            filter: brightness(1.03) saturate(1.04);
+            transform: none;
+        }
+
+        .advisor-target:active {
+            transform: none;
+        }
+
+        .advisor-target:focus-visible {
+            box-shadow:
+                0 0 0 4px rgba(241, 191, 99, 0.46),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8),
+                inset -16px -18px 24px rgba(106, 54, 24, 0.18),
+                0 30px 0 #5d301a,
+                0 48px 58px rgba(0, 0, 0, 0.4);
+        }
+
+        .advisor-target.is-hit {
+            animation: advisorHit 220ms cubic-bezier(0.22, 0.9, 0.26, 1);
+        }
+
+        @keyframes advisorHit {
+            0% {
+                transform: translateY(0) rotateX(0deg) rotateY(0deg) scale(1);
+                filter: brightness(1);
+            }
+
+            42% {
+                transform: translateY(8px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y)) scale(0.975);
+                filter: brightness(1.08) saturate(1.08);
+            }
+
+            100% {
+                transform: translateY(0) rotateX(0deg) rotateY(0deg) scale(1);
+                filter: brightness(1);
+            }
+        }
+
+        .photo-slot {
+            position: relative;
+            display: block;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            border-radius: 18px;
+            background:
+                radial-gradient(circle at 50% 30%, rgba(255, 241, 208, 0.3), transparent 26%),
+                linear-gradient(145deg, #18271f, #0b1210);
+            border: 8px solid rgba(89, 48, 27, 0.28);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18), inset 0 -30px 42px rgba(0, 0, 0, 0.28);
+        }
+
+        .photo-placeholder {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            color: rgba(255, 241, 208, 0.82);
+            text-align: center;
+            padding: 28px;
+            line-height: 1.6;
+            background:
+                radial-gradient(circle at 50% 32%, rgba(241, 191, 99, 0.24), transparent 22%),
+                linear-gradient(145deg, #24372a, #111916);
+        }
+
+        .photo-placeholder strong {
+            display: block;
+            font-size: 24px;
+            letter-spacing: 0.12em;
+            color: #ffe3a0;
+        }
+
+        .photo-placeholder span {
+            display: block;
+            margin-top: 10px;
+            color: rgba(255, 241, 208, 0.64);
+            font-size: 14px;
+        }
+
+        .mentor-photo {
+            position: absolute;
+            inset: 0;
+            display: none;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            pointer-events: none;
+            filter: saturate(0.98) contrast(1.02);
+        }
+
+        .mentor-photo.is-loaded {
+            display: block;
+        }
+
+        .photo-vignette {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(circle at var(--hit-x) var(--hit-y), rgba(255, 227, 142, 0.36), transparent 12%),
+                linear-gradient(180deg, transparent 0 62%, rgba(6, 10, 8, 0.28));
+            mix-blend-mode: screen;
+        }
+
+        .stamp {
+            position: absolute;
+            right: 8%;
+            bottom: 10%;
+            z-index: 2;
+            padding: 8px 10px;
+            color: rgba(185, 76, 51, 0.82);
+            border: 2px solid rgba(185, 76, 51, 0.65);
+            border-radius: 8px;
+            font-weight: 900;
+            letter-spacing: 0.12em;
+            transform: rotate(-10deg);
+            background: rgba(255, 241, 208, 0.12);
+            pointer-events: none;
+        }
+
+        .hit-glow {
+            position: absolute;
+            left: var(--hit-x);
+            top: var(--hit-y);
+            width: 82px;
+            height: 82px;
+            margin: -41px 0 0 -41px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 239, 178, 0.82), rgba(241, 191, 99, 0.16) 42%, transparent 70%);
+            transform: scale(0.4);
+            opacity: 0;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
+
+        .hit-glow.active {
+            animation: touchRipple 520ms ease-out;
+        }
+
+        @keyframes touchRipple {
+            0% {
+                opacity: 0.92;
+                transform: scale(0.18);
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(1.45);
+            }
+        }
+
+        .contact-mark {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 241, 179, 0.92), rgba(255, 241, 179, 0.12) 58%, transparent 70%);
+            pointer-events: none;
+            animation: contactFade 820ms ease-out forwards;
+        }
+
+        @keyframes contactFade {
+            0% {
+                transform: scale(0.4);
+                opacity: 0.95;
+            }
+
+            100% {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+
+        .mallet {
+            position: absolute;
+            left: calc(var(--hit-x) + 18px);
+            top: calc(var(--hit-y) - 166px);
+            width: 86px;
+            height: 188px;
+            z-index: 10;
+            pointer-events: none;
+            opacity: 0;
+            transform-origin: 42px 166px;
+            filter: drop-shadow(0 22px 18px rgba(0, 0, 0, 0.28));
+        }
+
+        .mallet.strike {
+            animation: malletStrike 300ms cubic-bezier(0.2, 0.92, 0.24, 1);
+        }
+
+        @keyframes malletStrike {
+            0% {
+                opacity: 0;
+                transform: translate(var(--wind-x), -72px) rotate(var(--wind-rot)) scale(0.94);
+            }
+
+            16% {
+                opacity: 1;
+            }
+
+            48% {
+                opacity: 1;
+                transform: translate(0, 0) rotate(var(--impact-rot)) scale(1);
+            }
+
+            68% {
+                opacity: 1;
+                transform: translate(calc(var(--wind-x) * 0.18), -18px) rotate(calc(var(--impact-rot) - 12deg)) scale(0.98);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(var(--wind-x), -66px) rotate(var(--wind-rot)) scale(0.94);
+            }
+        }
+
+        .mallet-head {
+            position: absolute;
+            left: 7px;
+            top: 0;
+            width: 72px;
+            height: 58px;
+            border-radius: 42% 58% 46% 54%;
+            background:
+                radial-gradient(circle at 32% 24%, rgba(255, 240, 181, 0.48), transparent 32%),
+                repeating-linear-gradient(100deg, rgba(95, 45, 21, 0.18) 0 8px, rgba(255, 224, 158, 0.16) 9px 15px),
+                linear-gradient(135deg, #d99749, #7d3a1b);
+            box-shadow: inset -12px -16px 18px rgba(36, 12, 6, 0.36), inset 8px 8px 14px rgba(255, 238, 176, 0.22);
+        }
+
+        .mallet-stick {
+            position: absolute;
+            left: 39px;
+            top: 46px;
+            width: 16px;
+            height: 138px;
+            border-radius: 999px;
+            background:
+                linear-gradient(90deg, rgba(255, 239, 180, 0.32), transparent 45%),
+                linear-gradient(180deg, #d8a15a, #69301a);
+            box-shadow: inset -5px 0 8px rgba(0, 0, 0, 0.28);
+        }
+
+        .hit-map {
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .hit-tip {
+            padding: 10px 12px;
+            border-radius: 18px;
+            background: rgba(7, 18, 14, 0.38);
+            border: 1px solid rgba(255, 241, 208, 0.14);
+            color: rgba(255, 241, 208, 0.68);
+            font-size: 12px;
+            line-height: 1.38;
+        }
+
+        .hit-tip strong {
+            display: block;
+            color: #ffe3a0;
+            margin-bottom: 3px;
+            font-size: 15px;
+        }
+
+        .hire-row {
+            position: relative;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 10px;
+            margin: 18px 0;
+        }
+
+        .junior-list {
+            position: relative;
+            list-style: none;
+            display: grid;
+            gap: 10px;
+            max-height: 340px;
+            overflow: auto;
+            padding: 0 4px 0 0;
+            margin: 0;
+        }
+
+        .junior-item {
+            display: grid;
+            gap: 10px;
+            padding: 14px;
+            border-radius: 20px;
+            background: rgba(7, 18, 14, 0.42);
+            border: 1px solid rgba(255, 241, 208, 0.15);
+        }
+
+        .junior-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .junior-name {
+            font-size: 16px;
+            color: var(--junior-color, #ffe3a0);
+            font-weight: 800;
+        }
+
+        .junior-meta {
+            color: rgba(255, 241, 208, 0.58);
+            font-size: 12px;
+            line-height: 1.45;
+        }
+
+        .junior-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .junior-actions button {
+            padding: 7px 10px;
+            font-size: 12px;
+        }
+
+        .junior-actions .danger {
+            color: #fff3df;
+            background: linear-gradient(180deg, #b85a36, #662918);
+        }
+
+        .empty-state {
+            position: relative;
+            padding: 18px;
+            border-radius: 20px;
+            color: rgba(255, 241, 208, 0.64);
+            background: rgba(7, 18, 14, 0.28);
+            border: 1px dashed rgba(255, 241, 208, 0.2);
+            line-height: 1.7;
+        }
+
+        .roast-box {
+            position: relative;
+            margin-top: 24px;
+        }
+
+        .roast-list {
+            list-style: none;
+            display: grid;
+            gap: 9px;
+            margin: 14px 0 0;
+            padding: 0;
+        }
+
+        .roast-list li {
+            color: rgba(255, 241, 208, 0.68);
+            font-size: 13px;
+            line-height: 1.5;
+            padding: 10px 12px;
+            border-left: 2px solid rgba(241, 191, 99, 0.58);
+            border-radius: 0 14px 14px 0;
+            background: rgba(7, 18, 14, 0.32);
+        }
+
+        .merit-text {
+            position: fixed;
+            z-index: 50;
+            left: 0;
+            top: 0;
+            transform: translate(-50%, -50%);
+            color: var(--float-color, #ffe3a0);
+            font-size: clamp(16px, 2vw, 23px);
+            font-weight: 900;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            pointer-events: none;
+            text-shadow:
+                0 2px 0 rgba(37, 18, 9, 0.76),
+                0 10px 24px rgba(0, 0, 0, 0.36);
+            animation: floatMerit 1180ms cubic-bezier(0.18, 0.9, 0.18, 1) forwards;
+        }
+
+        @keyframes floatMerit {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -24%) scale(0.72);
+            }
+
+            14% {
+                opacity: 1;
+                transform: translate(-50%, -70%) scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(calc(-50% + var(--drift, 0px)), -230%) scale(1.08);
+            }
+        }
+
+        .particle {
+            position: fixed;
+            z-index: 45;
+            left: var(--x);
+            top: var(--y);
+            width: var(--size, 8px);
+            height: var(--size, 8px);
+            margin: -4px 0 0 -4px;
+            border-radius: 50%;
+            background: var(--particle-color, #f1bf63);
+            pointer-events: none;
+            box-shadow: 0 0 16px currentColor;
+            animation: particleBurst 720ms ease-out forwards;
+        }
+
+        @keyframes particleBurst {
+            0% {
+                opacity: 0.9;
+                transform: translate(0, 0) scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(var(--dx), var(--dy)) scale(0.12);
+            }
+        }
+
+        .toast-stack {
+            position: fixed;
+            z-index: 60;
+            right: 22px;
+            top: 22px;
+            display: grid;
+            gap: 10px;
+            width: min(360px, calc(100vw - 44px));
+            pointer-events: none;
+        }
+
+        .toast {
+            padding: 14px 16px;
+            border-radius: 18px;
+            color: var(--ink);
+            background: linear-gradient(135deg, #fff1bd, #e7b45b);
+            box-shadow: 0 18px 44px rgba(0, 0, 0, 0.3);
+            animation: toastIn 2.9s ease forwards;
+        }
+
+        @keyframes toastIn {
+            0% {
+                opacity: 0;
+                transform: translateY(-12px) scale(0.96);
+            }
+
+            12%,
+            82% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-8px) scale(0.98);
+            }
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        @media (max-width: 1180px) {
+            .app-shell {
+                grid-template-columns: 1fr;
+                max-width: 920px;
+                align-items: stretch;
+            }
+
+            .stage-panel {
+                order: -1;
+                min-height: auto;
+            }
+
+            .hit-map {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 640px) {
+            body {
+                overflow-x: hidden;
+            }
+
+            .app-shell {
+                width: 100%;
+                min-height: auto;
+                gap: 10px;
+                padding: 8px;
+            }
+
+            .panel {
+                border-radius: 20px;
+            }
+
+            .side-panel,
+            .stage-panel {
+                padding: 14px;
+            }
+
+            .stage-panel {
+                min-height: calc(100vh - 16px);
+                min-height: calc(100svh - 16px);
+            }
+
+            h1 {
+                margin-top: 8px;
+                font-size: clamp(30px, 10vw, 42px);
+            }
+
+            h2 {
+                font-size: 18px;
+            }
+
+            .lead {
+                margin-top: 8px;
+                font-size: 13px;
+                line-height: 1.45;
+            }
+
+            .stage-header {
+                display: grid;
+                gap: 12px;
+            }
+
+            .stage-title h2 {
+                font-size: clamp(24px, 9vw, 34px);
+            }
+
+            .stage-title p {
+                font-size: 13px;
+                line-height: 1.45;
+            }
+
+            .stage-side {
+                grid-template-columns: minmax(0, 1fr) auto;
+                align-items: stretch;
+                justify-items: stretch;
+            }
+
+            .stage-actions button {
+                height: 100%;
+                padding-inline: 12px;
+            }
+
+            .zone-pill {
+                min-width: 0;
+                padding: 10px 12px;
+                text-align: left;
+                width: 100%;
+            }
+
+            .zone-pill strong {
+                font-size: 16px;
+            }
+
+            .stat-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 8px;
+                margin: 14px 0;
+            }
+
+            .stat-card {
+                min-height: 70px;
+                padding: 11px;
+                border-radius: 16px;
+            }
+
+            .stat-label {
+                font-size: 11px;
+            }
+
+            .stat-value {
+                font-size: 24px;
+            }
+
+            .stat-value.small {
+                font-size: 15px;
+            }
+
+            .stat-grid,
+            .hire-row {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .muyu-stage {
+                min-height: min(54vh, 390px);
+                min-height: min(54svh, 390px);
+                margin: 10px 0 10px;
+            }
+
+            .advisor-target {
+                width: min(260px, 76vw);
+                padding: 12px 12px 34px;
+                border-radius: 22px;
+            }
+
+            .advisor-target::before {
+                top: -60px;
+                width: 90px;
+                height: 72px;
+            }
+
+            .advisor-target::after {
+                bottom: 8px;
+                height: 20px;
+                font-size: 12px;
+            }
+
+            .desk {
+                height: 72px;
+            }
+
+            .desk::before {
+                top: -28px;
+                width: 96px;
+                height: 58px;
+                font-size: 14px;
+            }
+
+            .desk::after {
+                top: -38px;
+                width: 58px;
+                height: 44px;
+                font-size: 13px;
+            }
+
+            .hit-map {
+                display: flex;
+                gap: 8px;
+                overflow-x: auto;
+                padding-bottom: 4px;
+                scroll-snap-type: x proximity;
+            }
+
+            .hit-tip {
+                min-width: 142px;
+                scroll-snap-align: start;
+                padding: 9px 10px;
+            }
+
+            .control-grid button,
+            .upload-label {
+                padding: 9px 12px;
+                font-size: 14px;
+            }
+
+            .mentor-card {
+                margin-top: 14px;
+                padding: 13px;
+            }
+
+            .mentor-card-text,
+            .privacy-note {
+                font-size: 12px;
+                line-height: 1.45;
+            }
+
+            .toast-stack {
+                right: 10px;
+                top: 10px;
+                width: calc(100vw - 20px);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 1ms !important;
+                transition-duration: 1ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="app-shell">
+        <aside class="panel side-panel">
+            <span class="brand-kicker">课题组解压室</span>
+            <h1>导师木鱼</h1>
+            <p class="lead">上传照片，敲相框，给怨念找个出口。</p>
+
+            <div class="stat-grid" aria-live="polite">
+                <div class="stat-card">
+                    <span class="stat-label">解压值</span>
+                    <span class="stat-value" id="scoreDisplay">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">段位</span>
+                    <span class="stat-value small" id="titleDisplay">文献搬运工</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">连击</span>
+                    <span class="stat-value" id="comboDisplay">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">吐槽</span>
+                    <span class="stat-value small" id="tempoDisplay">尚未开麦</span>
+                </div>
+            </div>
+
+            <div class="control-grid">
+                <button id="soundToggle" type="button">音效开启</button>
+                <button class="secondary" type="button" data-focus-toggle>静心模式</button>
+                <button id="resetBtn" class="secondary" type="button">清空</button>
+            </div>
+
+            <div class="mentor-card">
+                <div class="mentor-card-title">导师照片</div>
+                <p class="mentor-card-text">照片仅本机显示。上传后更有代入感。</p>
+                <label for="mentorUpload" class="upload-label">上传导师照片</label>
+                <input id="mentorUpload" type="file" accept="image/*">
+                <p class="privacy-note" id="photoNote">未上传时使用默认工牌占位。</p>
+            </div>
+        </aside>
+
+        <section class="panel stage-panel">
+            <div class="stage-header">
+                <div class="stage-title">
+                    <h2>今日组会，先敲为敬</h2>
+                    <p>点眉心、眼神、嘴部、改稿区，会弹不同吐槽。</p>
+                </div>
+                <div class="stage-side">
+                    <div class="zone-pill">
+                        <span>当前落点</span>
+                        <strong id="zoneDisplay">尚未开敲</strong>
+                    </div>
+                    <div class="stage-actions">
+                        <button class="secondary" type="button" data-focus-toggle>静心模式</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="muyu-stage" id="muyuStage">
+                <div class="mallet" id="mallet" aria-hidden="true">
+                    <div class="mallet-head"></div>
+                    <div class="mallet-stick"></div>
+                </div>
+
+                <button class="advisor-target" id="muyu" type="button" aria-label="敲击导师照片相框">
+                    <span class="photo-slot">
+                        <span class="photo-placeholder" id="photoPlaceholder">
+                            <span>
+                                <strong>导师照片</strong>
+                                <span>敲相框，不敲人</span>
+                            </span>
+                        </span>
+                        <img id="mentorPhoto" class="mentor-photo" alt="导师照片">
+                        <span class="photo-vignette"></span>
+                        <span class="stamp">已读未回</span>
+                        <span class="hit-glow" id="hitGlow"></span>
+                    </span>
+                </button>
+
+                <div class="desk" aria-hidden="true"></div>
+            </div>
+
+            <div class="hit-map">
+                <div class="hit-tip"><strong>眉心</strong>开题焦虑，一槌打散。</div>
+                <div class="hit-tip"><strong>眼神</strong>已读不回，精准开麦。</div>
+                <div class="hit-tip"><strong>嘴部</strong>“再想想”自动反弹。</div>
+                <div class="hit-tip"><strong>下缘</strong>改稿、补实验、DDL。</div>
+            </div>
+        </section>
+
+        <aside class="panel side-panel">
+            <h2>课题组代敲</h2>
+            <p class="lead">请同门代敲，解放双手。</p>
+
+            <div class="hire-row">
+                <input id="juniorInput" type="text" maxlength="10" placeholder="同门昵称，可不填" autocomplete="off">
+                <button id="hireBtn" type="button">请同门</button>
+            </div>
+
+            <ul class="junior-list" id="juniorList"></ul>
+
+            <div class="roast-box">
+                <h2>吐槽簿</h2>
+                <ul class="roast-list" id="logList"></ul>
+            </div>
+        </aside>
+    </main>
+
+    <div class="toast-stack" id="toastStack"></div>
+    <span class="sr-only" id="liveRegion" aria-live="polite"></span>
+
+    <script>
+        const STORAGE_KEY = "advisor-muyu-state-v3";
+        const PHOTO_SAVE_LIMIT = 2200000;
+
+        const TITLES = [
+            { threshold: 0, name: "文献搬运工" },
+            { threshold: 66, name: "开题幸存者" },
+            { threshold: 180, name: "组会抗压员" },
+            { threshold: 520, name: "实验室夜行者" },
+            { threshold: 996, name: "返修护法" },
+            { threshold: 1888, name: "盲审护体真君" },
+            { threshold: 5000, name: "毕业玄学掌门" }
+        ];
+
+        const ZONES = {
+            sweet: {
+                key: "sweet",
+                name: "眉心开题点",
+                roastType: "开题焦虑",
+                gain: 5,
+                color: "#ffe49a",
+                freq: 128,
+                sustain: 0.44,
+                message: "开题幻觉碎一地"
+            },
+            forehead: {
+                key: "forehead",
+                name: "额头想法区",
+                roastType: "选题玄学",
+                gain: 3,
+                color: "#ffd071",
+                freq: 146,
+                sustain: 0.34,
+                message: "祖传选题先闭嘴"
+            },
+            eyes: {
+                key: "eyes",
+                name: "眼神已读区",
+                roastType: "已读不回",
+                gain: 3,
+                color: "#f7c46a",
+                freq: 164,
+                sustain: 0.3,
+                message: "已读不回扣一血"
+            },
+            mouth: {
+                key: "mouth",
+                name: "口头禅区域",
+                roastType: "再想想型",
+                gain: 2,
+                color: "#f09a56",
+                freq: 188,
+                sustain: 0.24,
+                message: "“不难吧”已反弹"
+            },
+            leftTemple: {
+                key: "leftTemple",
+                name: "左侧脑洞区",
+                roastType: "突然加需求",
+                gain: 2,
+                color: "#86d8bf",
+                freq: 206,
+                sustain: 0.2,
+                message: "临时脑洞退订"
+            },
+            rightTemple: {
+                key: "rightTemple",
+                name: "右侧脑洞区",
+                roastType: "方向漂移",
+                gain: 2,
+                color: "#86d8bf",
+                freq: 212,
+                sustain: 0.2,
+                message: "方向漂移打回"
+            },
+            paper: {
+                key: "paper",
+                name: "改稿堆下缘",
+                roastType: "返修补实验",
+                gain: 2,
+                color: "#e6b76d",
+                freq: 152,
+                sustain: 0.28,
+                message: "返修地狱降温"
+            },
+            email: {
+                key: "email",
+                name: "邮件边缘区",
+                roastType: "催回复",
+                gain: 1,
+                color: "#76cfbd",
+                freq: 222,
+                sustain: 0.18,
+                message: "催命邮件静音"
+            },
+            body: {
+                key: "body",
+                name: "相框安全区",
+                roastType: "日常碎念",
+                gain: 2,
+                color: "#d9ae68",
+                freq: 156,
+                sustain: 0.3,
+                message: "怨气排水"
+            }
+        };
+
+        const JUNIOR_ROLES = [
+            { key: "weekly", name: "周报型", baseInterval: 1080, precision: 0.82, bias: "eyes" },
+            { key: "revision", name: "返修型", baseInterval: 760, precision: 0.68, bias: "paper" },
+            { key: "night", name: "熬夜型", baseInterval: 640, precision: 0.5, bias: "random" },
+            { key: "topic", name: "开题型", baseInterval: 920, precision: 0.74, bias: "forehead" },
+            { key: "deadline", name: "DDL型", baseInterval: 560, precision: 0.44, bias: "edge" }
+        ];
+
+        const RANDOM_NAMES = [
+            "周报小能手", "研一小透明", "盲审锦鲤", "熬夜师兄", "补实验师姐", "文献搬运工",
+            "咖啡续命者", "表格尊者", "开题护法", "返修行者", "Latex居士", "数据清洗僧"
+        ];
+
+        const FLOAT_LINES = [
+            "退改意见-1",
+            "周报水分蒸发",
+            "盲审通过率+0.01",
+            "实验数据不再阴间",
+            "参考文献格式归位",
+            "开题PPT少一页",
+            "导师语音转文字失败",
+            "再想想冷却中",
+            "补实验怪被击退",
+            "毕业概率微微上扬",
+            "已读未回伤害减免",
+            "小修小补护体",
+            "“很快能做完”当场拆穿",
+            "画饼熟练度-1",
+            "PUA式鼓励已免疫",
+            "临时改方向，先挨一槌",
+            "这锅不背，数据自己说话",
+            "凌晨消息自动折叠",
+            "老板的灵感封印5分钟",
+            "“你再想想”反弹给发件人",
+            "无效组会时长-10分钟",
+            "口头承诺不计入成果",
+            "一作大饼保质期已过",
+            "审稿人2号暂停施法",
+            "开题委员会的空气凝固了",
+            "deadline 从脖子上下来",
+            "final_final_v9 停止繁殖",
+            "这个需求先关进笼子",
+            "一句话否定三个月，记仇+1",
+            "别再说小修小补了",
+            "Excel 地狱裂开一条缝",
+            "导师的饼掉地上了",
+            "组会PPT少挨一刀",
+            "未命名数据学会做人",
+            "“顺手做一下”已被驳回",
+            "科研牛马短暂直立行走",
+            "DDL 看了都沉默"
+        ];
+
+        const DAILY_ROASTS = [
+            "今日不宜相信“很快”和“小改”。",
+            "导师说顺手做一下，请先给顺手买保险。",
+            "组会能少讲就少讲，沉默是保护色。",
+            "别急着重构人生，先重命名 final_final_v7。",
+            "导师画的饼，请先验收面粉来源。",
+            "今天的你不是废物，是被需求打断的正常人。",
+            "如果他说“这个不复杂”，复杂度通常已经溢出了。",
+            "返修意见像雨，先找伞，再骂天。",
+            "凌晨两点的灵感不叫灵感，叫扰民。",
+            "开题不是渡劫，但导师很会布雷。"
+        ];
+
+        const $ = (selector) => document.querySelector(selector);
+        const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+        const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+        const randomItem = (items) => items[Math.floor(Math.random() * items.length)];
+        const rand = (min, max) => min + Math.random() * (max - min);
+        const bellCurve = () => (Math.random() + Math.random() + Math.random()) / 3;
+
+        const elements = {
+            score: $("#scoreDisplay"),
+            title: $("#titleDisplay"),
+            combo: $("#comboDisplay"),
+            tempo: $("#tempoDisplay"),
+            zone: $("#zoneDisplay"),
+            stage: $("#muyuStage"),
+            muyu: $("#muyu"),
+            surface: $(".photo-slot"),
+            mallet: $("#mallet"),
+            hitGlow: $("#hitGlow"),
+            soundToggle: $("#soundToggle"),
+            focusToggles: $$("[data-focus-toggle]"),
+            resetBtn: $("#resetBtn"),
+            hireBtn: $("#hireBtn"),
+            juniorInput: $("#juniorInput"),
+            juniorList: $("#juniorList"),
+            logList: $("#logList"),
+            mentorUpload: $("#mentorUpload"),
+            mentorPhoto: $("#mentorPhoto"),
+            photoPlaceholder: $("#photoPlaceholder"),
+            photoNote: $("#photoNote"),
+            toastStack: $("#toastStack"),
+            liveRegion: $("#liveRegion")
+        };
+
+        const saved = readSavedState();
+        const state = {
+            score: saved.score || 0,
+            combo: 0,
+            bestCombo: saved.bestCombo || 0,
+            lastHitAt: 0,
+            soundEnabled: saved.soundEnabled !== false,
+            focusMode: Boolean(saved.focusMode),
+            nextJuniorId: saved.nextJuniorId || 1,
+            achievements: saved.achievements || {},
+            zoneHits: saved.zoneHits || {},
+            juniors: normalizeJuniors(saved.juniors || []),
+            perfectHits: saved.perfectHits || 0,
+            mentorPhoto: saved.mentorPhoto || "",
+            sessionHits: 0
+        };
+
+        let audioContext = null;
+        let masterGain = null;
+        let pendingSaveTimer = null;
+
+        init();
+
+        function init() {
+            if (state.juniors.length) {
+                const maxId = Math.max(...state.juniors.map((junior) => junior.id));
+                state.nextJuniorId = Math.max(state.nextJuniorId, maxId + 1);
+            }
+
+            document.body.classList.toggle("focus-mode", state.focusMode);
+            applyMentorPhoto(state.mentorPhoto);
+            bindEvents();
+            renderAll();
+            addLog(getDailyRoast());
+            addLog("相框已摆正，今日第一槌等待落下。");
+        }
+
+        function bindEvents() {
+            elements.muyu.addEventListener("pointerdown", (event) => {
+                if (event.button && event.button !== 0) return;
+                event.preventDefault();
+                elements.muyu.setPointerCapture?.(event.pointerId);
+                triggerHit({
+                    clientX: event.clientX,
+                    clientY: event.clientY,
+                    pressure: event.pressure || 0.55,
+                    pointerType: event.pointerType
+                });
+            });
+
+            document.addEventListener("keydown", (event) => {
+                const tag = document.activeElement?.tagName;
+                const typing = tag === "INPUT" || tag === "TEXTAREA";
+                if (typing) return;
+
+                if (event.code === "Space" || event.code === "Enter") {
+                    event.preventDefault();
+                    hitAtCenter();
+                }
+            });
+
+            elements.soundToggle.addEventListener("click", () => {
+                state.soundEnabled = !state.soundEnabled;
+                if (state.soundEnabled) initAudio();
+                renderControls();
+                saveState();
+                showToast(state.soundEnabled ? "相框敲击声已开启。" : "相框敲击声已静音。");
+            });
+
+            for (const button of elements.focusToggles) {
+                button.addEventListener("click", toggleFocusMode);
+            }
+
+            elements.resetBtn.addEventListener("click", () => {
+                const confirmed = window.confirm("确定要清空解压值、连击纪录和成就吗？导师照片和同门名单会保留。");
+                if (!confirmed) return;
+
+                state.score = 0;
+                state.combo = 0;
+                state.bestCombo = 0;
+                state.perfectHits = 0;
+                state.zoneHits = {};
+                state.achievements = {};
+                state.lastHitAt = 0;
+                renderAll();
+                saveState();
+                addLog("吐槽簿翻到新的一页，怨念从零开始记账。");
+            });
+
+            elements.hireBtn.addEventListener("click", hireJunior);
+            elements.juniorInput.addEventListener("keydown", (event) => {
+                if (event.key === "Enter") hireJunior();
+            });
+
+            elements.mentorUpload.addEventListener("change", handleMentorUpload);
+            window.addEventListener("beforeunload", saveState);
+        }
+
+        function toggleFocusMode() {
+            state.focusMode = !state.focusMode;
+            document.body.classList.toggle("focus-mode", state.focusMode);
+            renderControls();
+            saveState();
+        }
+
+        function handleMentorUpload(event) {
+            const file = event.target.files?.[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.addEventListener("load", () => {
+                const dataUrl = String(reader.result || "");
+                applyMentorPhoto(dataUrl);
+
+                if (dataUrl.length <= PHOTO_SAVE_LIMIT) {
+                    state.mentorPhoto = dataUrl;
+                    elements.photoNote.textContent = "照片已保存到本机。";
+                } else {
+                    state.mentorPhoto = "";
+                    elements.photoNote.textContent = "照片较大，本次临时显示。";
+                }
+
+                queueSave();
+                showToast("导师上墙，开敲。");
+                addLog("照片已上传，怨气有了靶心。");
+            });
+            reader.readAsDataURL(file);
+        }
+
+        function applyMentorPhoto(src) {
+            if (src) {
+                elements.mentorPhoto.src = src;
+                elements.mentorPhoto.classList.add("is-loaded");
+                elements.photoPlaceholder.style.display = "none";
+                return;
+            }
+
+            elements.mentorPhoto.removeAttribute("src");
+            elements.mentorPhoto.classList.remove("is-loaded");
+            elements.photoPlaceholder.style.display = "grid";
+        }
+
+        function readSavedState() {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+            } catch {
+                return {};
+            }
+        }
+
+        function saveState() {
+            const safeJuniors = state.juniors.map((junior) => ({
+                id: junior.id,
+                name: junior.name,
+                color: junior.color,
+                roleKey: junior.roleKey,
+                roleName: junior.roleName,
+                tempo: junior.tempo,
+                precision: junior.precision,
+                level: junior.level,
+                hits: junior.hits,
+                fatigue: junior.fatigue
+            }));
+
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                    score: state.score,
+                    bestCombo: state.bestCombo,
+                    soundEnabled: state.soundEnabled,
+                    focusMode: state.focusMode,
+                    nextJuniorId: state.nextJuniorId,
+                    achievements: state.achievements,
+                    zoneHits: state.zoneHits,
+                    perfectHits: state.perfectHits,
+                    mentorPhoto: state.mentorPhoto,
+                    juniors: safeJuniors
+                }));
+            } catch {
+                elements.photoNote.textContent = "浏览器拒绝存储，但照样能敲。";
+            }
+        }
+
+        function queueSave() {
+            window.clearTimeout(pendingSaveTimer);
+            pendingSaveTimer = window.setTimeout(() => {
+                pendingSaveTimer = null;
+                saveState();
+            }, 260);
+        }
+
+        function normalizeJuniors(juniors) {
+            return juniors
+                .filter((junior) => junior && Number.isFinite(Number(junior.id)))
+                .map((junior) => {
+                    const role = JUNIOR_ROLES.find((item) => item.key === junior.roleKey) || randomItem(JUNIOR_ROLES);
+                    return {
+                        id: Number(junior.id),
+                        name: String(junior.name || randomItem(RANDOM_NAMES)).slice(0, 10),
+                        color: junior.color || makeJuniorColor(),
+                        roleKey: role.key,
+                        roleName: junior.roleName || role.name,
+                        tempo: Number(junior.tempo) || role.baseInterval,
+                        precision: clamp(Number(junior.precision) || role.precision, 0.25, 0.98),
+                        level: Number(junior.level) || 1,
+                        hits: Number(junior.hits) || 0,
+                        fatigue: Number(junior.fatigue) || 0,
+                        isActive: false,
+                        timerId: null
+                    };
+                });
+        }
+
+        function getDailyRoast() {
+            const dateKey = new Date().toLocaleDateString("zh-CN");
+            let seed = 0;
+            for (const char of dateKey) seed += char.charCodeAt(0);
+            return DAILY_ROASTS[seed % DAILY_ROASTS.length];
+        }
+
+        function hitAtCenter() {
+            const rect = elements.surface.getBoundingClientRect();
+            triggerHit({
+                clientX: rect.left + rect.width * 0.5,
+                clientY: rect.top + rect.height * 0.36,
+                pressure: 0.68,
+                pointerType: "keyboard"
+            });
+        }
+
+        function triggerHit(hit) {
+            initAudio();
+
+            const rect = elements.surface.getBoundingClientRect();
+            const xNorm = clamp((hit.clientX - rect.left) / rect.width, 0, 1);
+            const yNorm = clamp((hit.clientY - rect.top) / rect.height, 0, 1);
+            const zone = resolveZone(xNorm, yNorm);
+            const now = performance.now();
+            const interval = state.lastHitAt ? now - state.lastHitAt : 0;
+
+            state.combo = interval && interval < 920 ? state.combo + 1 : 1;
+            state.bestCombo = Math.max(state.bestCombo, state.combo);
+            state.lastHitAt = now;
+            state.sessionHits += 1;
+
+            if (zone === ZONES.sweet) state.perfectHits += 1;
+            state.zoneHits[zone.key] = (state.zoneHits[zone.key] || 0) + 1;
+
+            const pressure = clamp(hit.pressure || 0.55, 0.35, 1);
+            const comboBonus = Math.floor(Math.min(state.combo, 72) / 18);
+            const juniorBonus = hit.sourceJunior ? Math.max(0, Math.floor(hit.sourceJunior.level / 4)) : 0;
+            const photoBonus = state.mentorPhoto || elements.mentorPhoto.classList.contains("is-loaded") ? 1 : 0;
+            const gain = zone.gain + comboBonus + juniorBonus + photoBonus;
+
+            state.score += gain;
+            elements.liveRegion.textContent = `${zone.name}，解压值加 ${gain}`;
+
+            moveMallet(xNorm, yNorm);
+            animateImpact(xNorm, yNorm);
+            playKnock(zone, pressure, xNorm);
+            createFloatingText(hit.clientX, hit.clientY, buildFloatingMessage(hit, zone, gain), hit.sourceJunior?.color || zone.color);
+            createParticles(hit.clientX, hit.clientY, zone.color, zone === ZONES.sweet ? 16 : 10);
+            renderStats(interval, zone);
+            checkAchievements(zone);
+            queueSave();
+
+            if (navigator.vibrate && !hit.sourceJunior) {
+                navigator.vibrate(zone === ZONES.sweet ? 24 : 12);
+            }
+        }
+
+        function resolveZone(x, y) {
+            const dx = x - 0.5;
+            const dy = y - 0.34;
+            const sweetDist = Math.hypot(dx / 0.5, dy / 0.42);
+
+            if (sweetDist < 0.12) return ZONES.sweet;
+            if (y < 0.22) return ZONES.forehead;
+            if (y < 0.46 && x < 0.32) return ZONES.leftTemple;
+            if (y < 0.46 && x > 0.68) return ZONES.rightTemple;
+            if (y < 0.48) return ZONES.eyes;
+            if (y < 0.66 && Math.abs(dx) < 0.26) return ZONES.mouth;
+            if (y > 0.75) return ZONES.paper;
+            if (x < 0.18 || x > 0.82) return ZONES.email;
+            return ZONES.body;
+        }
+
+        function moveMallet(x, y) {
+            const stageRect = elements.stage.getBoundingClientRect();
+            const surfaceRect = elements.surface.getBoundingClientRect();
+            const stageX = clamp((surfaceRect.left + surfaceRect.width * x - stageRect.left) / stageRect.width, 0, 1);
+            const stageY = clamp((surfaceRect.top + surfaceRect.height * y - stageRect.top) / stageRect.height, 0, 1);
+            elements.stage.style.setProperty("--hit-x", `${stageX * 100}%`);
+            elements.stage.style.setProperty("--hit-y", `${stageY * 100}%`);
+            elements.stage.style.setProperty("--wind-x", x > 0.52 ? "58px" : "-58px");
+            elements.stage.style.setProperty("--wind-rot", x > 0.52 ? "-34deg" : "34deg");
+            elements.stage.style.setProperty("--impact-rot", x > 0.52 ? "-8deg" : "8deg");
+
+            restartAnimation(elements.mallet, "strike");
+        }
+
+        function animateImpact(x, y) {
+            elements.muyu.style.setProperty("--hit-x", `${x * 100}%`);
+            elements.muyu.style.setProperty("--hit-y", `${y * 100}%`);
+            elements.muyu.style.setProperty("--tilt-x", `${(y - 0.48) * -10}deg`);
+            elements.muyu.style.setProperty("--tilt-y", `${(x - 0.5) * 10}deg`);
+
+            restartAnimation(elements.muyu, "is-hit");
+            restartAnimation(elements.hitGlow, "active");
+
+            const mark = document.createElement("span");
+            mark.className = "contact-mark";
+            mark.style.left = `${x * 100}%`;
+            mark.style.top = `${y * 100}%`;
+            elements.surface.appendChild(mark);
+            window.setTimeout(() => mark.remove(), 900);
+        }
+
+        function restartAnimation(element, className) {
+            element.classList.remove(className);
+            void element.offsetWidth;
+            element.classList.add(className);
+        }
+
+        function buildFloatingMessage(hit, zone, gain) {
+            const actor = hit.sourceJunior ? hit.sourceJunior.name : "亲手一槌";
+            const line = zone === ZONES.sweet ? "精准命中导师防御薄弱处" : randomItem(FLOAT_LINES);
+            return `${actor} · ${zone.message} · ${line} +${gain}`;
+        }
+
+        function renderStats(interval = 0, zone = null) {
+            elements.score.textContent = state.score.toLocaleString("zh-CN");
+            elements.combo.textContent = state.combo ? `${state.combo} 连` : "0";
+            elements.title.textContent = getTitle();
+            elements.zone.textContent = zone ? zone.name : "尚未开敲";
+            elements.tempo.textContent = zone ? zone.roastType : "尚未开麦";
+
+            if (interval && zone) {
+                const bpm = clamp(Math.round(60000 / interval), 1, 999);
+                elements.tempo.textContent = `${zone.roastType} · ${bpm}/分`;
+            }
+        }
+
+        function renderControls() {
+            elements.soundToggle.textContent = state.soundEnabled ? "音效开启" : "音效关闭";
+            for (const button of elements.focusToggles) {
+                button.textContent = state.focusMode ? "退出静心" : "静心模式";
+            }
+        }
+
+        function renderAll() {
+            renderStats(0, null);
+            renderControls();
+            renderJuniorList();
+        }
+
+        function getTitle() {
+            for (let i = TITLES.length - 1; i >= 0; i -= 1) {
+                if (state.score >= TITLES[i].threshold) return TITLES[i].name;
+            }
+            return TITLES[0].name;
+        }
+
+        function initAudio() {
+            if (!state.soundEnabled || audioContext) return;
+
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContextClass) return;
+
+            audioContext = new AudioContextClass();
+            masterGain = audioContext.createGain();
+            masterGain.gain.value = 0.72;
+            masterGain.connect(audioContext.destination);
+        }
+
+        function playKnock(zone, pressure, xNorm) {
+            if (!state.soundEnabled || !audioContext || !masterGain) return;
+            if (audioContext.state === "suspended") audioContext.resume();
+
+            const now = audioContext.currentTime;
+            const panValue = clamp((xNorm - 0.5) * 1.4, -0.85, 0.85);
+            const panner = audioContext.createStereoPanner ? audioContext.createStereoPanner() : null;
+            const destination = panner || masterGain;
+
+            if (panner) {
+                panner.pan.setValueAtTime(panValue, now);
+                panner.connect(masterGain);
+            }
+
+            const body = audioContext.createOscillator();
+            const bodyGain = audioContext.createGain();
+            const bodyFilter = audioContext.createBiquadFilter();
+            body.type = "triangle";
+            body.frequency.setValueAtTime(zone.freq * (0.88 + pressure * 0.2), now);
+            body.frequency.exponentialRampToValueAtTime(zone.freq * 0.58, now + zone.sustain);
+            bodyFilter.type = "lowpass";
+            bodyFilter.frequency.setValueAtTime(620 + pressure * 420, now);
+            bodyGain.gain.setValueAtTime(0.0001, now);
+            bodyGain.gain.exponentialRampToValueAtTime(0.22 * pressure, now + 0.012);
+            bodyGain.gain.exponentialRampToValueAtTime(0.0001, now + zone.sustain);
+            body.connect(bodyFilter);
+            bodyFilter.connect(bodyGain);
+            bodyGain.connect(destination);
+            body.start(now);
+            body.stop(now + zone.sustain + 0.04);
+
+            const click = audioContext.createBufferSource();
+            const clickBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.07, audioContext.sampleRate);
+            const data = clickBuffer.getChannelData(0);
+            for (let i = 0; i < data.length; i += 1) {
+                data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 2.4);
+            }
+            const clickFilter = audioContext.createBiquadFilter();
+            const clickGain = audioContext.createGain();
+            click.buffer = clickBuffer;
+            clickFilter.type = zone === ZONES.paper ? "bandpass" : "highpass";
+            clickFilter.frequency.setValueAtTime(zone === ZONES.paper ? 1200 : 760, now);
+            clickGain.gain.setValueAtTime(0.08 + pressure * 0.08, now);
+            clickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+            click.connect(clickFilter);
+            clickFilter.connect(clickGain);
+            clickGain.connect(destination);
+            click.start(now);
+
+            const resonance = audioContext.createOscillator();
+            const resonanceGain = audioContext.createGain();
+            resonance.type = "sine";
+            resonance.frequency.setValueAtTime(zone.freq * 0.48, now);
+            resonanceGain.gain.setValueAtTime(0.0001, now);
+            resonanceGain.gain.exponentialRampToValueAtTime(zone === ZONES.sweet ? 0.12 : 0.055, now + 0.03);
+            resonanceGain.gain.exponentialRampToValueAtTime(0.0001, now + zone.sustain + 0.16);
+            resonance.connect(resonanceGain);
+            resonanceGain.connect(destination);
+            resonance.start(now);
+            resonance.stop(now + zone.sustain + 0.2);
+        }
+
+        function hireJunior() {
+            const role = randomItem(JUNIOR_ROLES);
+            const typedName = elements.juniorInput.value.trim();
+            const name = (typedName || randomItem(RANDOM_NAMES)).slice(0, 10);
+            const junior = {
+                id: state.nextJuniorId,
+                name,
+                color: makeJuniorColor(),
+                roleKey: role.key,
+                roleName: role.name,
+                tempo: Math.round(role.baseInterval * rand(0.88, 1.12)),
+                precision: clamp(role.precision + rand(-0.08, 0.08), 0.3, 0.94),
+                level: 1,
+                hits: 0,
+                fatigue: 0,
+                isActive: false,
+                timerId: null
+            };
+
+            state.nextJuniorId += 1;
+            state.juniors.push(junior);
+            elements.juniorInput.value = "";
+            renderJuniorList();
+            saveState();
+            checkAchievements(ZONES.body);
+            showToast(`${junior.name} 入组，属性是${junior.roleName}。`);
+            addLog(`${junior.name} 报到：先代敲，再写周报。`);
+        }
+
+        function makeJuniorColor() {
+            return `hsl(${Math.floor(rand(28, 178))}, 72%, 63%)`;
+        }
+
+        function renderJuniorList() {
+            elements.juniorList.textContent = "";
+
+            if (!state.juniors.length) {
+                const empty = document.createElement("li");
+                empty.className = "empty-state";
+                empty.textContent = "还没有同门。可以请一位来代敲，或者先靠自己敲出第一段组会节奏。";
+                elements.juniorList.appendChild(empty);
+                return;
+            }
+
+            for (const junior of state.juniors) {
+                const li = document.createElement("li");
+                li.className = "junior-item";
+                li.style.setProperty("--junior-color", junior.color);
+
+                const top = document.createElement("div");
+                top.className = "junior-top";
+
+                const name = document.createElement("strong");
+                name.className = "junior-name";
+                name.textContent = junior.name;
+
+                const status = document.createElement("span");
+                status.className = "junior-meta";
+                status.textContent = junior.isActive ? "代敲中" : "写周报中";
+
+                top.append(name, status);
+
+                const meta = document.createElement("div");
+                meta.className = "junior-meta";
+                meta.textContent = `${junior.roleName} · 等级 ${junior.level} · ${Math.round(junior.tempo)}ms 一槌 · 准度 ${Math.round(junior.precision * 100)}% · 已敲 ${junior.hits} 次`;
+
+                const actions = document.createElement("div");
+                actions.className = "junior-actions";
+
+                const toggle = document.createElement("button");
+                toggle.type = "button";
+                toggle.textContent = junior.isActive ? "暂停" : "上钟";
+                toggle.addEventListener("click", () => toggleJunior(junior.id));
+
+                const train = document.createElement("button");
+                train.type = "button";
+                train.className = "secondary";
+                train.textContent = `加练 ${getTrainCost(junior)}`;
+                train.addEventListener("click", () => trainJunior(junior.id));
+
+                const fire = document.createElement("button");
+                fire.type = "button";
+                fire.className = "danger";
+                fire.textContent = "退组";
+                fire.addEventListener("click", () => removeJunior(junior.id));
+
+                actions.append(toggle, train, fire);
+                li.append(top, meta, actions);
+                elements.juniorList.appendChild(li);
+            }
+        }
+
+        function toggleJunior(id) {
+            const junior = state.juniors.find((item) => item.id === id);
+            if (!junior) return;
+
+            if (junior.isActive) {
+                stopJunior(junior);
+                addLog(`${junior.name} 暂停代敲，回去补周报。`);
+            } else {
+                initAudio();
+                junior.isActive = true;
+                junior.fatigue = Math.max(0, junior.fatigue - 10);
+                scheduleJunior(junior);
+                addLog(`${junior.name} 开始代敲，偏好${junior.roleName}。`);
+            }
+
+            renderJuniorList();
+            saveState();
+        }
+
+        function scheduleJunior(junior) {
+            window.clearTimeout(junior.timerId);
+            const delay = getJuniorDelay(junior);
+            junior.timerId = window.setTimeout(() => {
+                if (!junior.isActive) return;
+                juniorAutoHit(junior);
+                scheduleJunior(junior);
+            }, delay);
+        }
+
+        function getJuniorDelay(junior) {
+            const fatigueFactor = 1 + junior.fatigue / 260;
+            return Math.round(junior.tempo * fatigueFactor * rand(0.86, 1.16));
+        }
+
+        function juniorAutoHit(junior) {
+            const rect = elements.surface.getBoundingClientRect();
+            const point = pickJuniorPoint(junior);
+            junior.hits += 1;
+            junior.fatigue = clamp(junior.fatigue + 0.55, 0, 80);
+
+            triggerHit({
+                clientX: rect.left + rect.width * point.x,
+                clientY: rect.top + rect.height * point.y,
+                pressure: 0.5 + junior.precision * 0.32,
+                sourceJunior: junior
+            });
+
+            if (junior.hits % 12 === 0) renderJuniorList();
+        }
+
+        function pickJuniorPoint(junior) {
+            const role = JUNIOR_ROLES.find((item) => item.key === junior.roleKey) || JUNIOR_ROLES[0];
+            const spread = clamp((1 - junior.precision) * 0.62, 0.04, 0.42);
+
+            if (role.bias === "eyes") {
+                return {
+                    x: clamp(0.5 + (bellCurve() - 0.5) * spread, 0.2, 0.8),
+                    y: clamp(0.38 + (bellCurve() - 0.5) * spread, 0.22, 0.52)
+                };
+            }
+
+            if (role.bias === "forehead") {
+                return {
+                    x: clamp(0.5 + (bellCurve() - 0.5) * spread, 0.24, 0.76),
+                    y: clamp(0.25 + (bellCurve() - 0.5) * spread, 0.12, 0.38)
+                };
+            }
+
+            if (role.bias === "paper") {
+                return {
+                    x: clamp(0.5 + (bellCurve() - 0.5) * spread, 0.24, 0.76),
+                    y: clamp(0.78 + (bellCurve() - 0.5) * spread, 0.64, 0.9)
+                };
+            }
+
+            if (role.bias === "edge") {
+                const side = Math.random() > 0.5 ? 1 : -1;
+                return {
+                    x: clamp(0.5 + side * rand(0.3, 0.44) + (bellCurve() - 0.5) * spread, 0.08, 0.92),
+                    y: clamp(0.48 + (bellCurve() - 0.5) * 0.52, 0.2, 0.82)
+                };
+            }
+
+            return {
+                x: clamp(rand(0.18, 0.82), 0.12, 0.88),
+                y: clamp(rand(0.2, 0.82), 0.12, 0.88)
+            };
+        }
+
+        function trainJunior(id) {
+            const junior = state.juniors.find((item) => item.id === id);
+            if (!junior) return;
+
+            const cost = getTrainCost(junior);
+            if (state.score < cost) {
+                showToast(`解压值不足，还差 ${cost - state.score}。`);
+                return;
+            }
+
+            state.score -= cost;
+            junior.level += 1;
+            junior.tempo = Math.max(360, Math.round(junior.tempo * 0.91));
+            junior.precision = clamp(junior.precision + 0.045, 0.3, 0.97);
+            junior.fatigue = 0;
+            if (junior.isActive) scheduleJunior(junior);
+
+            renderAll();
+            saveState();
+            showToast(`${junior.name} 加练成功，吐槽更精准了。`);
+            addLog(`${junior.name} 加练一级，敲相框的角度开始像有统计显著性。`);
+        }
+
+        function getTrainCost(junior) {
+            return Math.round(24 * Math.pow(1.48, junior.level - 1));
+        }
+
+        function removeJunior(id) {
+            const junior = state.juniors.find((item) => item.id === id);
+            if (!junior) return;
+
+            const confirmed = window.confirm(`确定让 ${junior.name} 退组吗？`);
+            if (!confirmed) return;
+
+            stopJunior(junior);
+            state.juniors = state.juniors.filter((item) => item.id !== id);
+            renderJuniorList();
+            saveState();
+            addLog(`${junior.name} 收拾工位，留下半杯咖啡和一份未命名数据。`);
+        }
+
+        function stopJunior(junior) {
+            junior.isActive = false;
+            window.clearTimeout(junior.timerId);
+            junior.timerId = null;
+        }
+
+        function checkAchievements(zone) {
+            const unlocks = [
+                { key: "photo", condition: elements.mentorPhoto.classList.contains("is-loaded"), text: "成就：导师上墙，代入感已超标。" },
+                { key: "score108", condition: state.score >= 108, text: "成就：已读未回108响，聊天框开始反省。" },
+                { key: "score520", condition: state.score >= 520, text: "成就：导师画饼520克，你选择不吃。" },
+                { key: "score996", condition: state.score >= 996, text: "成就：实验室996守夜人，咖啡因授予你临时神格。" },
+                { key: "score1888", condition: state.score >= 1888, text: "成就：盲审护体，审稿人2号被迫冷静。" },
+                { key: "combo18", condition: state.combo >= 18, text: "成就：十八连问，组会空气出现裂缝。" },
+                { key: "combo36", condition: state.combo >= 36, text: "成就：三十六连改，第七版 final 学会自己哭。" },
+                { key: "combo72", condition: state.combo >= 72, text: "成就：七十二连敲，cover letter 开始自动求饶。" },
+                { key: "combo108", condition: state.combo >= 108, text: "成就：一百零八连敲，导师口头禅进入CD。" },
+                { key: "sweet9", condition: state.perfectHits >= 9, text: "成就：九次精准眉心，开题焦虑原地卸载。" },
+                { key: "session30", condition: state.sessionHits >= 30, text: "成就：本轮三十槌，怨气从固态升华。" },
+                { key: "eyes", condition: zone === ZONES.eyes, text: "发现：眼神区专治已读不回。" },
+                { key: "mouth", condition: zone === ZONES.mouth, text: "发现：口头禅区域会反弹“不难，真的不难”。" },
+                { key: "paper", condition: zone === ZONES.paper, text: "发现：改稿堆下缘适合处理返修地狱。" },
+                { key: "email", condition: zone === ZONES.email, text: "发现：邮件边缘区能静音催命提醒。" },
+                { key: "temple", condition: zone === ZONES.leftTemple || zone === ZONES.rightTemple, text: "发现：脑洞区适合打回临时改方向。" },
+                { key: "paper10", condition: (state.zoneHits.paper || 0) >= 10, text: "成就：返修十连，补实验怪低头认错。" },
+                { key: "mouth10", condition: (state.zoneHits.mouth || 0) >= 10, text: "成就：口头禅十连，“你再想想”被你想回去了。" },
+                { key: "eyes10", condition: (state.zoneHits.eyes || 0) >= 10, text: "成就：已读十连，消息框开始装死。" },
+                { key: "group3", condition: state.juniors.length >= 3, text: "成就：三人代敲小队，课题组怨念并行计算。" }
+            ];
+
+            for (const unlock of unlocks) {
+                if (unlock.condition && !state.achievements[unlock.key]) {
+                    state.achievements[unlock.key] = true;
+                    showToast(unlock.text);
+                    addLog(unlock.text);
+                }
+            }
+        }
+
+        function createFloatingText(x, y, text, color) {
+            const element = document.createElement("div");
+            element.className = "merit-text";
+            element.textContent = text;
+            element.style.left = `${x}px`;
+            element.style.top = `${y}px`;
+            element.style.setProperty("--float-color", color);
+            element.style.setProperty("--drift", `${rand(-44, 44)}px`);
+            document.body.appendChild(element);
+            window.setTimeout(() => element.remove(), 1300);
+        }
+
+        function createParticles(x, y, color, count) {
+            for (let i = 0; i < count; i += 1) {
+                const particle = document.createElement("span");
+                const angle = rand(0, Math.PI * 2);
+                const distance = rand(34, 110);
+                particle.className = "particle";
+                particle.style.setProperty("--x", `${x}px`);
+                particle.style.setProperty("--y", `${y}px`);
+                particle.style.setProperty("--dx", `${Math.cos(angle) * distance}px`);
+                particle.style.setProperty("--dy", `${Math.sin(angle) * distance - 18}px`);
+                particle.style.setProperty("--size", `${rand(5, 11)}px`);
+                particle.style.setProperty("--particle-color", color);
+                document.body.appendChild(particle);
+                window.setTimeout(() => particle.remove(), 760);
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.createElement("div");
+            toast.className = "toast";
+            toast.textContent = message;
+            elements.toastStack.appendChild(toast);
+            window.setTimeout(() => toast.remove(), 3000);
+        }
+
+        function addLog(message) {
+            const item = document.createElement("li");
+            item.textContent = message;
+            elements.logList.prepend(item);
+
+            while (elements.logList.children.length > 6) {
+                elements.logList.lastElementChild.remove();
+            }
+        }
+    </script>
+</body>
+
+</html>
