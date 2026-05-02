@@ -267,6 +267,10 @@
             gap: 10px;
         }
 
+        .stage-actions {
+            justify-content: flex-end;
+        }
+
         .mentor-card {
             position: relative;
             margin-top: 18px;
@@ -1038,12 +1042,18 @@
             }
 
             .stage-side {
-                grid-template-columns: minmax(0, 1fr) auto;
+                grid-template-columns: 1fr;
                 align-items: stretch;
                 justify-items: stretch;
             }
 
-            .stage-actions button {
+            .stage-actions {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .stage-actions button,
+            .stage-actions .upload-label {
                 height: 100%;
                 padding-inline: 12px;
             }
@@ -1233,6 +1243,7 @@
                         <strong id="zoneDisplay">尚未开敲</strong>
                     </div>
                     <div class="stage-actions">
+                        <label for="mentorUpload" class="upload-label">上传照片</label>
                         <button class="secondary" type="button" data-focus-toggle>静心模式</button>
                     </div>
                 </div>
@@ -1412,44 +1423,82 @@
         ];
 
         const FLOAT_LINES = [
-            "退改意见-1",
-            "周报水分蒸发",
-            "盲审通过率+0.01",
-            "实验数据不再阴间",
-            "参考文献格式归位",
-            "开题PPT少一页",
-            "导师语音转文字失败",
-            "再想想冷却中",
-            "补实验怪被击退",
-            "毕业概率微微上扬",
-            "已读未回伤害减免",
-            "小修小补护体",
-            "“很快能做完”当场拆穿",
-            "画饼熟练度-1",
-            "PUA式鼓励已免疫",
-            "临时改方向，先挨一槌",
-            "这锅不背，数据自己说话",
-            "凌晨消息自动折叠",
-            "老板的灵感封印5分钟",
-            "“你再想想”反弹给发件人",
-            "无效组会时长-10分钟",
-            "口头承诺不计入成果",
-            "一作大饼保质期已过",
-            "审稿人2号暂停施法",
-            "开题委员会的空气凝固了",
-            "deadline 从脖子上下来",
-            "final_final_v9 停止繁殖",
-            "这个需求先关进笼子",
-            "一句话否定三个月，记仇+1",
-            "别再说小修小补了",
-            "Excel 地狱裂开一条缝",
-            "导师的饼掉地上了",
-            "组会PPT少挨一刀",
-            "未命名数据学会做人",
-            "“顺手做一下”已被驳回",
-            "科研牛马短暂直立行走",
-            "DDL 看了都沉默"
+            "画饼",
+            "已读不回",
+            "临时改方向",
+            "PUA式鼓励",
+            "补实验怪",
+            "无效组会",
+            "final_final_v9",
+            "凌晨消息",
+            "口头承诺不算成果",
+            "放养式指导",
+            "导师失联",
+            "论文署名玄学",
+            "廉价劳动力",
+            "项目搬砖",
+            "行政杂活",
+            "周末开会",
+            "临时组会",
+            "周报八股文",
+            "PPT重做",
+            "格式警察",
+            "改了又改",
+            "方向反复横跳",
+            "你先做着",
+            "这个很简单",
+            "顺手做一下",
+            "攒个大的",
+            "投稿卡住",
+            "毕业卡点",
+            "成果被顺手",
+            "KPI机器",
+            "实验室牛马",
+            "老板视角",
+            "让师兄看看",
+            "别问问就是忙",
+            "大饼续杯",
+            "需求插队",
+            "会议套娃",
+            "基金本子打工",
+            "横向项目搬砖",
+            "一作悬疑剧",
+            "通讯作者结界",
+            "数据别美化",
+            "样本量不够",
+            "审稿人2号",
+            "返修无限月读",
+            "开题玄学",
+            "盲审抽卡",
+            "毕业名额玄学",
+            "招生画饼",
+            "口头OK不算",
+            "消息装死",
+            "假期不存在",
+            "咖啡续命",
+            "工位成家",
+            "老板的老板",
+            "idea收割机",
+            "文献海葬",
+            "数据地狱",
+            "代码祖坟",
+            "表格坐牢",
+            "开会续杯",
+            "情绪外包",
+            "导师读条中"
         ];
+
+        const ZONE_FLOAT_LINES = {
+            sweet: ["开题玄学", "画饼", "方向反复横跳", "攒个大的", "毕业卡点", "导师读条中"],
+            forehead: ["临时改方向", "idea收割机", "需求插队", "老板视角", "你先做着", "招生画饼"],
+            eyes: ["已读不回", "消息装死", "导师失联", "别问问就是忙", "凌晨消息", "口头OK不算"],
+            mouth: ["PUA式鼓励", "这个很简单", "顺手做一下", "口头承诺不算成果", "大饼续杯", "情绪外包"],
+            leftTemple: ["临时组会", "周末开会", "会议套娃", "无效组会", "开会续杯", "PPT重做"],
+            rightTemple: ["方向反复横跳", "需求插队", "项目搬砖", "横向项目搬砖", "基金本子打工", "KPI机器"],
+            paper: ["补实验怪", "返修无限月读", "final_final_v9", "格式警察", "审稿人2号", "论文署名玄学"],
+            email: ["已读不回", "凌晨消息", "消息装死", "导师失联", "口头OK不算", "别问问就是忙"],
+            body: ["廉价劳动力", "放养式指导", "实验室牛马", "行政杂活", "成果被顺手", "导师读条中"]
+        };
 
         const DAILY_ROASTS = [
             "今日不宜相信“很快”和“小改”。",
@@ -1461,7 +1510,17 @@
             "如果他说“这个不复杂”，复杂度通常已经溢出了。",
             "返修意见像雨，先找伞，再骂天。",
             "凌晨两点的灵感不叫灵感，叫扰民。",
-            "开题不是渡劫，但导师很会布雷。"
+            "开题不是渡劫，但导师很会布雷。",
+            "口头承诺请截图，不然它会蒸发。",
+            "已读不回不是沉默，是一种远程压强。",
+            "放养不是自由，是没有说明书的荒野求生。",
+            "周报不是论文，别让它长成论文。",
+            "临时改方向之前，请先给旧方向烧纸。",
+            "无效组会的最大成果，是大家一起变老。",
+            "署名玄学别硬猜，先把证据链留好。",
+            "补实验可以，别补成传家宝。",
+            "基金本子不是你的毕业论文替身。",
+            "如果导师开始画饼，记得问烤箱在哪。"
         ];
 
         const $ = (selector) => document.querySelector(selector);
@@ -1821,9 +1880,8 @@
         }
 
         function buildFloatingMessage(hit, zone, gain) {
-            const actor = hit.sourceJunior ? hit.sourceJunior.name : "亲手一槌";
-            const line = zone === ZONES.sweet ? "精准命中导师防御薄弱处" : randomItem(FLOAT_LINES);
-            return `${actor} · ${zone.message} · ${line} +${gain}`;
+            const zoneLines = ZONE_FLOAT_LINES[zone.key] || FLOAT_LINES;
+            return randomItem(Math.random() < 0.72 ? zoneLines : FLOAT_LINES);
         }
 
         function renderStats(interval = 0, zone = null) {
@@ -2182,6 +2240,9 @@
                 { key: "paper10", condition: (state.zoneHits.paper || 0) >= 10, text: "成就：返修十连，补实验怪低头认错。" },
                 { key: "mouth10", condition: (state.zoneHits.mouth || 0) >= 10, text: "成就：口头禅十连，“你再想想”被你想回去了。" },
                 { key: "eyes10", condition: (state.zoneHits.eyes || 0) >= 10, text: "成就：已读十连，消息框开始装死。" },
+                { key: "forehead10", condition: (state.zoneHits.forehead || 0) >= 10, text: "成就：改方向十连，旧课题当场入土。" },
+                { key: "email20", condition: (state.zoneHits.email || 0) >= 20, text: "成就：催命邮件二十响，收件箱进入贤者模式。" },
+                { key: "body20", condition: (state.zoneHits.body || 0) >= 20, text: "成就：放养二十响，荒野求生技能点满。" },
                 { key: "group3", condition: state.juniors.length >= 3, text: "成就：三人代敲小队，课题组怨念并行计算。" }
             ];
 
